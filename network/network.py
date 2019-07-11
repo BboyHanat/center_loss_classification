@@ -30,7 +30,7 @@ class NetWork:
                          'C3': 'resnet_v1_50/block2/unit_3/bottleneck_v1',
                          'C4': 'resnet_v1_50/block3/unit_5/bottleneck_v1',
                          'C5': 'resnet_v1_50/block4/unit_3/bottleneck_v1',
-                         'logit': 'resnet_v1_50/logits',
+                         'logit': 'resnet_v1_50/logits_fc',
                          'data_process_op': 'sub'
                          },
         'resnet_v1_101': {'function': resnet_v1_101,
@@ -79,13 +79,13 @@ class NetWork:
         self.sess = sess
         self.images = tf.placeholder(tf.float32, shape=[None, 512, 512, channels])
         self.labels = tf.placeholder(tf.int64, shape=[None])
-        self.training_iters = tf.placeholder(tf.int64, shape=[])
         self.width = width
         self.height = height
         self.backbones = backbones
         self.class_num = class_num
+        self.pretrained_model = pretrained_model
         self.global_step = tf.Variable(0, dtype=tf.int32, name="global_step_unet")
-        self.network_info, self.optimizer, self.loss, self.output, self.preci, self.acc \
+        self.network_info, self.optimizer, self.loss, centers_update_op, self.output, self.preci, self.acc \
             = self.graph(self.global_step, learning_rate=0.001, decay_rate=0.95)
         if pretrained_model is not None:
             self.load_pretrained_model()
@@ -105,14 +105,18 @@ class NetWork:
         net, end_points = graph_func(self.images, num_classes=self.class_num)
         logit = end_points[network_info["logit"]]
         logit = tf.squeeze(logit, axis=[1, 2])
-        loss, centers, centers_update_op = get_center_loss(logit, self.labels, 0.5, self.class_num)
-
+        center_loss, centers, centers_update_op = get_center_loss(logit, self.labels, 0.5, self.class_num)
         one_hot = tf.one_hot(self.labels, self.class_num)
         softmax_loss = tf.nn.softmax_cross_entropy_with_logits_v2(labels=one_hot, logits=logit)
+
+        center_loss = tf.reduce_mean(center_loss)
+        softmax_loss = tf.reduce_mean(softmax_loss)
+        total_loss = softmax_loss + 0.5 * center_loss
         preci = precision(logit, one_hot)
         acc = accuary(logit, one_hot)
-        optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss, global_step=global_step)
-        return network_info, optimizer, softmax_loss, logit, preci, acc
+        with tf.control_dependencies([centers_update_op]):
+            optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(total_loss, global_step=global_step)
+        return network_info, optimizer, total_loss, centers_update_op, logit, preci, acc
 
     def load_pretrained_model(self):
         """
@@ -147,13 +151,13 @@ class NetWork:
         self.sess.run(tf.variables_initializer(variables, name='init'))
         print("variables initilized ok")
         # Get dictionary of model variable
-        # var_keep_dic = get_variables_in_checkpoint_file(self.pretrained_model)
-        # # # Get the variables to restore
-        # variables_to_restore = get_variables_to_restore(variables, var_keep_dic)
-        # restorer = tf.train.Saver(variables_to_restore)
-        # restorer.restore(self.sess, self.pretrained_model)
+        var_keep_dic = get_variables_in_checkpoint_file(self.pretrained_model)
+        # # Get the variables to restore
+        variables_to_restore = get_variables_to_restore(variables, var_keep_dic)
+        restorer = tf.train.Saver(variables_to_restore)
+        restorer.restore(self.sess, self.pretrained_model)
 
-    def train(self, dataset_train, dataset_val, epochs, training_iters, val_interval=1000, val_iters=100, ckpt_path="./weight"):
+    def train(self, dataset_train, dataset_val, epochs, training_iters, val_interval=1000, val_iters=100, show_step=50, ckpt_path="./weight"):
         """
         train
         :param image:
@@ -163,7 +167,6 @@ class NetWork:
         :param ckpt_path:
         :return:
         """
-
         print("Start Training")
         iterator_train = dataset_train.make_initializable_iterator()
         init_op_train = iterator_train.make_initializer(dataset_train)
@@ -183,13 +186,12 @@ class NetWork:
                 loss = self.sess.run([self.loss], feed_dict={self.images: batch_x,
                                                              self.labels: batch_y
                                                              })
-                _, global_step = self.sess.run([self.optimizer, self.global_step], feed_dict={self.images: batch_x,
-                                                                                              self.labels: batch_y,
-                                                                                              self.training_iters: training_iters
-                                                                                              })
+                self.sess.run([self.optimizer, self.global_step], feed_dict={self.images: batch_x,
+                                                                             self.labels: batch_y,
+                                                                             })
 
                 # validation on training
-                if global_step % val_interval == 0 and global_step > 0:
+                if step % val_interval == 0 and step > 0:
                     precisions = 0.0
                     accuarys = 0.0
                     for i in range(val_iters):
@@ -198,8 +200,9 @@ class NetWork:
                         preci, acc = self.sess.run([self.preci, self.acc], feed_dict={self.images: val_batch_x, self.labels: val_batch_y})
                         precisions += preci[0]
                         accuarys += acc[0]
-                    print("Precision: %f, Accuary: %f".format(precisions / val_iters, accuarys / val_iters))
-                print("Loss: %f".format(loss))
+                    print("Precision: {}, Accuary: {}".format(precisions / val_iters, accuarys / val_iters))
+                if step % show_step == 0 and step > 0:
+                    print("Loss: {}".format(loss))
             ckpt_name = self.backbones + '_center_loss_' + str(epoch) + '.ckpt'
             saver.save(self.sess, os.path.join(ckpt_path, ckpt_name))
         coord.request_stop()

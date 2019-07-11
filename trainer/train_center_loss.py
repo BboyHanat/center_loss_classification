@@ -109,7 +109,7 @@ def train(train_img_root,
 
     net = NetWork(sess=sess,
                   backbones='resnet_v1_50',
-                  pretrained_model='../weight/pertrain/resnet_v1_50.ckpt',
+                  pretrained_model='weight/pretrain/resnet_v1_50.ckpt',
                   width=width,
                   height=height,
                   channels=channels,
@@ -119,6 +119,6 @@ def train(train_img_root,
               dataset_val=dataset_val,
               epochs=epoch,
               training_iters=training_iters,
-              ckpt_path='../weight/train/'
+              ckpt_path='./weight/train/'
               )
     sess.close()
