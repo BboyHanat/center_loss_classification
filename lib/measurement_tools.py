@@ -9,9 +9,10 @@ Desc:
 import tensorflow as tf
 
 
-def tf_confusion_metrics(predict, labels):
+
+def binary_tf_confusion_metrics(predict, labels):
     """
-    tf_confusion_metrics
+    binary_tf_confusion_metrics
     :param predict:
     :param labels:
     :return:
@@ -30,48 +31,50 @@ def tf_confusion_metrics(predict, labels):
     return tp, fn, fp, tn
 
 
-def f1_score(predict, labels):
+def binary_f1_score(predict, labels):
     """
     f1_score
     :param predict:
     :param labels:
     :return:
     """
-    tp, fn, fp, tn = tf_confusion_metrics(predict, labels)
+    tp, fn, fp, tn = binary_tf_confusion_metrics(predict, labels)
     precision = float(tp) / (float(tp) + float(fp))
     recall = float(tp) / (float(tp) + float(fn))
     return (2 * (precision * recall)) / (precision + recall)
 
 
-def accuary(predict, labels):
+def binary_accuary(predict, labels):
     """
     accuary
     :param predict:
     :param labels:
     :return:
     """
-    tp, fn, fp, tn = tf_confusion_metrics(predict, labels)
+    tp, fn, fp, tn = binary_tf_confusion_metrics(predict, labels)
     accuracy = (tp + tn) / (tp + fp + fn + tn)
     return accuracy
 
 
-def recall(predict, labels):
+def binary_recall(predict, labels):
     """
     recall
     :param predict:
     :param labels:
     :return:
     """
-    tp, fn, fp, tn = tf_confusion_metrics(predict, labels)
+    tp, fn, fp, tn = binary_tf_confusion_metrics(predict, labels)
     return float(tp) / (float(tp) + float(fn))
 
 
-def precision(predict, labels):
+def binary_precision(predict, labels):
     """
     Precision
     :param predict:
     :param labels:
     :return:
     """
-    tp, fn, fp, tn = tf_confusion_metrics(predict, labels)
+    tp, fn, fp, tn = binary_tf_confusion_metrics(predict, labels)
     return tp / (tp + fp)
+
+

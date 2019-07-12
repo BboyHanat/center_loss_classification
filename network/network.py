@@ -85,7 +85,7 @@ class NetWork:
         self.class_num = class_num
         self.pretrained_model = pretrained_model
         self.global_step = tf.Variable(0, dtype=tf.int32, name="global_step_unet")
-        self.network_info, self.optimizer, self.loss, self.output, self.preci, self.acc \
+        self.network_info, self.optimizer, self.loss, self.output, self.acc \
             = self.graph(self.global_step, learning_rate=0.001, decay_rate=0.95)
         if pretrained_model is not None:
             self.load_pretrained_model()
@@ -112,11 +112,11 @@ class NetWork:
         #center_loss = tf.reduce_mean(center_loss)
         softmax_loss = tf.reduce_mean(softmax_loss)
         total_loss = softmax_loss #+ 0.5 * center_loss
-        preci = precision(logit, one_hot)
-        acc = accuary(logit, one_hot)
+
+        acc = tf.metrics.accuracy(labels=one_hot, predictions=logit)
         #with tf.control_dependencies([centers_update_op]):
         optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(total_loss, global_step=global_step)
-        return network_info, optimizer, total_loss, logit, preci, acc
+        return network_info, optimizer, total_loss, logit, acc
 
     def load_pretrained_model(self):
         """
@@ -192,15 +192,13 @@ class NetWork:
 
                 # validation on training
                 if step % val_interval == 0 and step > val_interval:
-                    precisions = 0.0
                     accuarys = 0.0
                     for i in range(val_iters):
                         val_batch_x, val_batch_y = self.sess.run(iterator_val)
                         val_batch_x = data_perprocess(val_batch_x, self.network_info['data_process_op'])
-                        preci, acc = self.sess.run([self.preci, self.acc], feed_dict={self.images: val_batch_x, self.labels: val_batch_y})
-                        precisions += preci
+                        acc = self.sess.run([self.acc], feed_dict={self.images: val_batch_x, self.labels: val_batch_y})
                         accuarys += acc
-                    print("Precision: {}, Accuary: {}".format(precisions / val_iters, accuarys / val_iters))
+                    print("Accuary: {}".format(accuarys / val_iters))
                 if step % show_step == 0 and step > 0:
                     print("Loss: {}".format(loss))
             ckpt_name = self.backbones + '_center_loss_' + str(epoch) + '.ckpt'
