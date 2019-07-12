@@ -111,12 +111,12 @@ class NetWork:
 
         #center_loss = tf.reduce_mean(center_loss)
         softmax_loss = tf.reduce_mean(softmax_loss)
-        total_loss = softmax_loss #+ 0.5 * center_loss
+        total_loss = softmax_loss # + 0.5 * center_loss
 
         correct_prediction = tf.equal(tf.argmax(logit, 1), tf.argmax(one_hot, 1))
         acc = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-        #with tf.control_dependencies([centers_update_op]):
-        optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(total_loss, global_step=global_step)
+        with tf.control_dependencies([centers_update_op]):
+            optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(total_loss, global_step=global_step)
         return network_info, optimizer, center_loss, logit, acc
 
     def load_pretrained_model(self):
@@ -200,7 +200,7 @@ class NetWork:
                         val_batch_x = data_perprocess(val_batch_x, self.network_info['data_process_op'])
                         acc, loss = self.sess.run([self.acc, self.loss], feed_dict={self.images: val_batch_x, self.labels: val_batch_y})
                         print(acc.shape)
-                        accuarys += acc[0]
+                        accuarys += acc
                         losses += loss
                     print("Accuary: {}, Loss: {}".format((accuarys / val_iters), (losses/val_iters)))
                 if step % show_step == 0 and step > 0:
