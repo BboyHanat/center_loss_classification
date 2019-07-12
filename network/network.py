@@ -194,12 +194,15 @@ class NetWork:
                 # validation on training
                 if step % val_interval == 0 and step > val_interval:
                     accuarys = 0.0
+                    losses = 0.0
                     for i in range(val_iters):
                         val_batch_x, val_batch_y = self.sess.run(iterator_val)
                         val_batch_x = data_perprocess(val_batch_x, self.network_info['data_process_op'])
-                        acc = self.sess.run([self.acc], feed_dict={self.images: val_batch_x, self.labels: val_batch_y})
-                        accuarys += acc
-                    print("Accuary: {}".format(accuarys / val_iters))
+                        acc, loss = self.sess.run([self.acc, self.loss], feed_dict={self.images: val_batch_x, self.labels: val_batch_y})
+                        print(acc.shape)
+                        accuarys += acc[0]
+                        losses += loss
+                    print("Accuary: {}, Loss: {}".format((accuarys / val_iters), (losses/val_iters)))
                 if step % show_step == 0 and step > 0:
                     print("Loss: {}".format(loss))
             ckpt_name = self.backbones + '_center_loss_' + str(epoch) + '.ckpt'
