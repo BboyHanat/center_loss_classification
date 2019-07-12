@@ -6,6 +6,7 @@ from uuid import uuid1
 import random
 from random import choice, sample
 from PIL import Image, ImageDraw, ImageFont
+import copy
 
 from multiprocessing import Pool
 
@@ -53,7 +54,7 @@ def mk_single_data():
         for item in fonts_map.items():
             f.write("{} {}\n".format(item[0], item[1]))
 
-    res = get_bg_font_combos(fonts_map, bgs_map, 3, 10)
+    res = get_bg_font_combos(fonts_map, bgs_map, 1, 1000)
     print(len(res))
     return res
 
@@ -81,10 +82,10 @@ def get_bg_font_combos(fonts_dict, bgs_dict, k, num_per_font=1000):
 
 def read_text():
     file_name = u'huanbei.txt'
-    with open(file_name, 'r') as f:#, encoding='utf-8'
+    with open(file_name, 'r') as f:  # , encoding='utf-8'
         texts = f.read().split(' ')
 
-        start = random.randint(0, 80)
+        start = random.randint(0, 10)
         num = random.randint(1, 4)
         s = texts[start]
         for j in range(num):
@@ -101,35 +102,60 @@ def draw_pic(font_bg_combo):
     bg_id = bg[0]
     id = str(uuid1())
 
-    image = Image.open( bg[1])
+    image = Image.open(bg[1])
     image = image.convert("RGB")
-    y_ids = set(range(10, 20))
-    x_ids = set(range(10, 40))
-    pos_y = sample(y_ids, 1)[0]
-    for font in fonts:
+
+    # pos_y = sample(y_ids, 1)[0]
+    for index, font in enumerate(fonts):
         # 字体设置
-        font_size = set(range(10, 30))
-        pos_x = sample(x_ids, 1)[0]
+
+        font_size = set(range(30, 60))
+        # pos_x = sample(x_ids, 1)[0]
         font_size = sample(font_size, 1)[0]
         draw = ImageDraw.Draw(image)
         my_font = ImageFont.truetype(font[1], size=font_size)
-        width = image.width
-        height = image.height
-        x = pos_x / 100
-        y = pos_y / 100
-        position = (int(width * x), int(height * y))
-        draw.multiline_text(position, read_text(), font=my_font, fill=(255, 255, 255))
-        pos_y+=20
+        text = read_text()
+        text_size = draw.textsize(text, font=my_font)
+        w, h = image.width, image.height
+        new_w, new_h = w, h
+        if text_size[0] > w and text_size[1] < h:
+            new_w = int(text_size[0])
+            new_h = int(text_size[0] / w * h)
+            image1 = image.resize((new_w, new_h))
+        elif text_size[0] < w and text_size[1] > h:
+            new_w = int(text_size[0] / h * w)
+            new_h = int(text_size[1])
+            image1 = image.resize((new_w, new_h))
+        elif text_size[0] > w and text_size[1] > h:
+            if text_size[0] / w > text_size[1] / h:
+                new_w = int(text_size[0])
+                new_h = int(text_size[0] / w * h)
+            else:
+                new_w = int(text_size[0] / h * w)
+                new_h = int(text_size[1])
+            image1 = image.resize((new_w, new_h))
+        else:
+            image1 = copy.deepcopy(image)
+        w, h = new_w, new_h
+        x = random.randint(0, w - text_size[0])
+        y = random.randint(0, h - text_size[1])
 
-    image.save((multi_font_data_dir + "{}_{}_{}.jpg").format(id, fonts_id, bg_id))#[x+109 for x in fonts_id]
+        position = (x, y)
+        draw = ImageDraw.Draw(image1)
+        draw.multiline_text(position, text, font=my_font, fill=(255, 255, 255))
+
+        image1 = image1.crop((x, y, x + text_size[0], y + text_size[1]))
+        class_name = font[1].split('/')[-1].split('.')[0]
+        savepath = os.path.join(single_font_data_dir, class_name)
+        if not os.path.exists(savepath):
+            os.mkdir(savepath)
+        image1.save((savepath +"/"+ "class_name_{}_{}.jpg").format(id, index))  # [x+109 for x in fonts_id]
 
 
 if __name__ == '__main__':
-
-
     # len(fonts)=198,dfp:109
     res = mk_single_data()
     pool_num = 10
     p = Pool(pool_num)
-    draw_pic(res[0])
+    # draw_pic(res[0])
     p.map(draw_pic, res)
