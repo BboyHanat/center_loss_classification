@@ -198,8 +198,8 @@ class NetWork:
                         val_batch_x, val_batch_y = self.sess.run(iterator_val)
                         val_batch_x = data_perprocess(val_batch_x, self.network_info['data_process_op'])
                         preci, acc = self.sess.run([self.preci, self.acc], feed_dict={self.images: val_batch_x, self.labels: val_batch_y})
-                        precisions += preci[0]
-                        accuarys += acc[0]
+                        precisions += preci
+                        accuarys += acc
                     print("Precision: {}, Accuary: {}".format(precisions / val_iters, accuarys / val_iters))
                 if step % show_step == 0 and step > 0:
                     print("Loss: {}".format(loss))
