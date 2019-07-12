@@ -171,7 +171,7 @@ class NetWork:
         iterator_train = dataset_train.make_initializable_iterator()
         init_op_train = iterator_train.make_initializer(dataset_train)
         iterator_val = dataset_val.make_initializable_iterator()
-        init_op_val = iterator_train.make_initializer(dataset_val)
+        init_op_val = iterator_val.make_initializer(dataset_val)
         self.sess.run([init_op_train, init_op_val])
 
         iterator_train = iterator_train.get_next()
