@@ -113,7 +113,8 @@ class NetWork:
         softmax_loss = tf.reduce_mean(softmax_loss)
         total_loss = softmax_loss #+ 0.5 * center_loss
 
-        acc = tf.metrics.accuracy(labels=one_hot, predictions=logit)
+        correct_prediction = tf.equal(tf.argmax(logit, 1), tf.argmax(one_hot, 1))
+        acc = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
         #with tf.control_dependencies([centers_update_op]):
         optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(total_loss, global_step=global_step)
         return network_info, optimizer, total_loss, logit, acc
