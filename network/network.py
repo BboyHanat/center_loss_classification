@@ -85,7 +85,7 @@ class NetWork:
         self.class_num = class_num
         self.pretrained_model = pretrained_model
         self.global_step = tf.Variable(0, dtype=tf.int32, name="global_step_unet")
-        self.network_info, self.optimizer, self.loss, centers_update_op, self.output, self.preci, self.acc \
+        self.network_info, self.optimizer, self.loss, self.output, self.preci, self.acc \
             = self.graph(self.global_step, learning_rate=0.001, decay_rate=0.95)
         if pretrained_model is not None:
             self.load_pretrained_model()
@@ -105,18 +105,18 @@ class NetWork:
         net, end_points = graph_func(self.images, num_classes=self.class_num)
         logit = end_points[network_info["logit"]]
         logit = tf.squeeze(logit, axis=[1, 2])
-        center_loss, centers, centers_update_op = get_center_loss(logit, self.labels, 0.5, self.class_num)
+        #center_loss, centers, centers_update_op = get_center_loss(logit, self.labels, 0.5, self.class_num)
         one_hot = tf.one_hot(self.labels, self.class_num)
         softmax_loss = tf.nn.softmax_cross_entropy_with_logits_v2(labels=one_hot, logits=logit)
 
-        center_loss = tf.reduce_mean(center_loss)
+        #center_loss = tf.reduce_mean(center_loss)
         softmax_loss = tf.reduce_mean(softmax_loss)
-        total_loss = softmax_loss + 0.5 * center_loss
+        total_loss = softmax_loss #+ 0.5 * center_loss
         preci = precision(logit, one_hot)
         acc = accuary(logit, one_hot)
-        with tf.control_dependencies([centers_update_op]):
-            optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(total_loss, global_step=global_step)
-        return network_info, optimizer, total_loss, centers_update_op, logit, preci, acc
+        #with tf.control_dependencies([centers_update_op]):
+        optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(total_loss, global_step=global_step)
+        return network_info, optimizer, total_loss, logit, preci, acc
 
     def load_pretrained_model(self):
         """
