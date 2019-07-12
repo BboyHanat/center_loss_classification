@@ -149,7 +149,7 @@ def draw_pic(font_bg_combo):
         savepath = os.path.join(single_font_data_dir, class_name)
         if not os.path.exists(savepath):
             os.mkdir(savepath)
-        image1.save((savepath +"/"+ "class_name_{}_{}.jpg").format(id, index))  # [x+109 for x in fonts_id]
+        image1.save((savepath + "/" + "class_name_{}_{}.jpg").format(id, index))  # [x+109 for x in fonts_id]
 
 
 if __name__ == '__main__':

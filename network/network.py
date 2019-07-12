@@ -191,7 +191,7 @@ class NetWork:
                                                                              })
 
                 # validation on training
-                if step % val_interval == 0 and step > 0:
+                if step % val_interval == 0 and step > val_interval:
                     precisions = 0.0
                     accuarys = 0.0
                     for i in range(val_iters):
