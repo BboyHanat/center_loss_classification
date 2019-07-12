@@ -121,8 +121,7 @@ class NetWork:
 
     def load_pretrained_model(self):
         """
-        load pretrained network weight
-        :param sess:
+        load_pretrained_model
         :return:
         """
 
@@ -158,13 +157,16 @@ class NetWork:
         restorer = tf.train.Saver(variables_to_restore)
         restorer.restore(self.sess, self.pretrained_model)
 
-    def train(self, dataset_train, dataset_val, epochs, training_iters, val_interval=100, val_iters=100, show_step=50, ckpt_path="./weight"):
+    def train(self, dataset_train, dataset_val, epochs, training_iters, val_interval=3000, val_iters=100, show_step=50, ckpt_path="./weight"):
         """
         train
-        :param image:
-        :param label:
+        :param dataset_train:
+        :param dataset_val:
         :param epochs:
         :param training_iters:
+        :param val_interval:
+        :param val_iters:
+        :param show_step:
         :param ckpt_path:
         :return:
         """
