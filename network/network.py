@@ -199,7 +199,6 @@ class NetWork:
                         val_batch_x, val_batch_y = self.sess.run(iterator_val)
                         val_batch_x = data_perprocess(val_batch_x, self.network_info['data_process_op'])
                         acc, loss = self.sess.run([self.acc, self.loss], feed_dict={self.images: val_batch_x, self.labels: val_batch_y})
-                        print(acc.shape)
                         accuarys += acc
                         losses += loss
                     print("Accuary: {}, Loss: {}".format((accuarys / val_iters), (losses/val_iters)))
