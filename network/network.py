@@ -89,7 +89,7 @@ class NetWork:
         if pretrained_model is not None:
             self.load_pretrained_model()
 
-    def graph(self, learning_rate=0.00001):
+    def graph(self, learning_rate=0.001):
         """
         create a graph
         :param global_step:
@@ -116,7 +116,7 @@ class NetWork:
         correct_prediction = tf.equal(tf.argmax(logit, 1), tf.argmax(one_hot, 1))
         acc = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
         with tf.control_dependencies([centers_update_op]):
-            optimizer = tf.train.MomentumOptimizer(learning_rate=learning_rate, momentum=0.9).minimize(total_loss) #, global_step=global_step)
+            optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(total_loss) #, global_step=global_step)
         return network_info, optimizer, total_loss, logit, acc
 
     def load_pretrained_model(self):
