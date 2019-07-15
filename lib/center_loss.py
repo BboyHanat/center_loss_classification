@@ -50,5 +50,4 @@ def get_center_loss(features, labels, alpha, num_classes):
     diff = alpha * diff
 
     centers_update_op = tf.scatter_sub(centers, labels, diff)
-
     return loss, centers, centers_update_op
