@@ -77,7 +77,7 @@ class NetWork:
         :param class_num:
         """
         self.sess = sess
-        self.images = tf.placeholder(tf.float32, shape=[None, 512, 512, channels])
+        self.images = tf.placeholder(tf.float32, shape=[None, height, width, channels])
         self.labels = tf.placeholder(tf.int64, shape=[None])
         self.width = width
         self.height = height
@@ -89,7 +89,7 @@ class NetWork:
         if pretrained_model is not None:
             self.load_pretrained_model()
 
-    def graph(self, learning_rate=0.001):
+    def graph(self, learning_rate=0.00001):
         """
         create a graph
         :param global_step:
@@ -111,7 +111,7 @@ class NetWork:
 
         center_loss = tf.reduce_mean(center_loss)
         softmax_loss = tf.reduce_mean(softmax_loss)
-        total_loss = softmax_loss + 0.5 * center_loss
+        total_loss = 0.5*softmax_loss + 0.5 * center_loss
 
         correct_prediction = tf.equal(tf.argmax(logit, 1), tf.argmax(one_hot, 1))
         acc = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))

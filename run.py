@@ -17,7 +17,7 @@ batch_size = 16
 epoch = 64
 
 
-train(train_img_root, val_img_root, height=512, width=512, channels=3, class_num=109, train_batch_size=32, val_batch_size=16, epoch=64)
+train(train_img_root, val_img_root, height=224, width=224, channels=3, class_num=109, train_batch_size=32, val_batch_size=16, epoch=64)
 
 
 # import tensorflow as tf
