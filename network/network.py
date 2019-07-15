@@ -85,11 +85,11 @@ class NetWork:
         self.class_num = class_num
         self.pretrained_model = pretrained_model
         self.network_info, self.optimizer, self.loss, self.output, self.acc \
-            = self.graph(self.global_step, learning_rate=0.001, decay_rate=0.95)
+            = self.graph(learning_rate=0.00001)
         if pretrained_model is not None:
             self.load_pretrained_model()
 
-    def graph(self, learning_rate=0.00001):
+    def graph(self, learning_rate=0.001):
         """
         create a graph
         :param global_step:
