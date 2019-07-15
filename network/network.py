@@ -85,7 +85,7 @@ class NetWork:
         self.class_num = class_num
         self.pretrained_model = pretrained_model
         self.network_info, self.optimizer, self.loss, self.output, self.acc \
-            = self.graph(learning_rate=0.0001)
+            = self.graph(learning_rate=0.001)
         if pretrained_model is not None:
             self.load_pretrained_model()
 
