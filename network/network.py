@@ -90,7 +90,7 @@ class NetWork:
         if pretrained_model is not None:
             self.load_pretrained_model()
 
-    def graph(self, global_step, learning_rate=0.001, decay_rate=0.95):
+    def graph(self, global_step, learning_rate=0.01, decay_rate=0.95):
         """
         create a graph
         :param global_step:
