@@ -35,7 +35,6 @@ def get_center_loss(features, labels, alpha, num_classes):
 
     # 根据样本label,获取mini-batch中每一个样本对应的中心值
     centers_batch = tf.gather(centers, labels)
-    print(centers_batch.get_shape())
     # 计算loss
     loss = tf.nn.l2_loss(features - centers_batch)
 
