@@ -85,7 +85,7 @@ class NetWork:
         self.class_num = class_num
         self.pretrained_model = pretrained_model
         self.network_info, self.optimizer, self.loss, self.output, self.acc \
-            = self.graph(learning_rate=0.00001)
+            = self.graph(learning_rate=0.0001)
         if pretrained_model is not None:
             self.load_pretrained_model()
 
@@ -111,7 +111,7 @@ class NetWork:
 
         center_loss = tf.reduce_mean(center_loss)
         softmax_loss = tf.reduce_mean(softmax_loss)
-        total_loss = 0.5*softmax_loss + 0.5 * center_loss
+        total_loss = softmax_loss + 0.5 * center_loss
 
         correct_prediction = tf.equal(tf.argmax(logit, 1), tf.argmax(one_hot, 1))
         acc = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
