@@ -10,11 +10,11 @@ import copy
 
 from multiprocessing import Pool
 
-back_ground_dir = 'bg/'
+back_ground_dir = 'bg_old/'
 
-font_data_dir = 'fonts/'
+font_data_dir = '印刷体/'
 
-single_font_data_dir = 'single/'
+single_font_data_dir = 'train/'
 
 multi_font_data_dir = 'mix/'
 
